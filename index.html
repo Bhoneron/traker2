@@ -1,205 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Money Usage Tracker</title>
-    <style>
-        /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Money Usage Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-            margin: 0 20px;
-        }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        /* Table Styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
+    h1 {
+      text-align: center;
+    }
 
-        table th,
-        table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+    .form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
 
-        table th {
-            background-color: #4CAF50;
-            color: white;
-        }
+    .form input, .form button {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
-        /* Form Inputs and Buttons */
-        .form-container {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-        }
+    .form button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
 
-        label {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
+    .form button:hover {
+      background-color: #45a049;
+    }
 
-        input,
-        select {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+    .expense-list {
+      margin-top: 20px;
+    }
 
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
 
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .clear-btn {
-            background-color: #f44336;
-        }
-
-        .clear-btn:hover {
-            background-color: #e53935;
-        }
-
-        /* Message Styling */
-        .message {
-            color: #28a745;
-            font-weight: bold;
-            text-align: center;
-        }
-    </style>
+    li {
+      background-color: #f9f9f9;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Money Usage Tracker</h1>
 
-    <div class="container">
-        <h1>Daily Money Usage Tracker</h1>
-
-        <div class="form-container">
-            <label for="date">Date</label>
-            <input type="date" id="date" required>
-
-            <label for="category">Category</label>
-            <select id="category">
-                <option value="Food">Food</option>
-                <option value="Transportation">Transportation</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Utilities">Utilities</option>
-            </select>
-
-            <label for="description">Description</label>
-            <input type="text" id="description" placeholder="Enter expense description" required>
-
-            <label for="amount">Amount</label>
-            <input type="number" id="amount" placeholder="Amount spent" required>
-
-            <button id="addExpense">Add Expense</button>
-            <button class="clear-btn" id="clearData">Clear All Data</button>
-        </div>
-
-        <p id="message" class="message"></p>
-
-        <table id="expenseTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="form">
+      <input type="text" id="category" placeholder="Category (e.g., Food)" />
+      <input type="text" id="description" placeholder="Description" />
+      <input type="date" id="date" />
+      <input type="number" id="expense" placeholder="Expense Amount" />
+      <button onclick="saveExpense()">Save Expense</button>
     </div>
 
-    <script>
-        // Get DOM elements
-        const addExpenseButton = document.getElementById('addExpense');
-        const clearDataButton = document.getElementById('clearData');
-        const expenseTableBody = document.querySelector('#expenseTable tbody');
-        const message = document.getElementById('message');
+    <div class="expense-list">
+      <h2>Saved Expenses</h2>
+      <ul id="expenses"></ul>
+    </div>
+  </div>
 
-        // Data storage
-        let expenses = [];
+  <script>
+    // Load saved expenses from localStorage when the page is loaded
+    document.addEventListener('DOMContentLoaded', loadExpenses);
 
-        // Event Listener: Add Expense
-        addExpenseButton.addEventListener('click', () => {
-            const date = document.getElementById('date').value;
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            const amount = parseFloat(document.getElementById('amount').value);
+    function loadExpenses() {
+      const savedExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
+      const expensesList = document.getElementById('expenses');
+      expensesList.innerHTML = ''; // Clear existing list
 
-            if (date && category && description && !isNaN(amount)) {
-                // Create new expense object
-                const expense = { date, category, description, amount };
-                expenses.push(expense);
+      savedExpenses.forEach((expense) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${expense.category}</strong> - ${expense.description} <br>
+                       Date: ${expense.date} <br>
+                       Expense: $${expense.amount}`;
+        expensesList.appendChild(li);
+      });
+    }
 
-                // Add expense to table
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${date}</td>
-                    <td>${category}</td>
-                    <td>${description}</td>
-                    <td>$${amount.toFixed(2)}</td>
-                `;
-                expenseTableBody.appendChild(row);
+    function saveExpense() {
+      const category = document.getElementById('category').value;
+      const description = document.getElementById('description').value;
+      const date = document.getElementById('date').value;
+      const expenseAmount = parseFloat(document.getElementById('expense').value);
 
-                // Clear inputs
-                document.getElementById('date').value = '';
-                document.getElementById('description').value = '';
-                document.getElementById('amount').value = '';
+      if (!category || !description || !date || isNaN(expenseAmount) || expenseAmount <= 0) {
+        alert('Please fill in all fields correctly.');
+        return;
+      }
 
-                message.textContent = 'Expense added successfully!';
-                message.style.color = '#28a745';
-            } else {
-                message.textContent = 'Please fill in all fields correctly.';
-                message.style.color = '#dc3545';
-            }
-        });
+      // Create a new expense object
+      const newExpense = {
+        category: category,
+        description: description,
+        date: date,
+        amount: expenseAmount
+      };
 
-        // Event Listener: Clear All Data
-        clearDataButton.addEventListener('click', () => {
-            expenses = [];
-            expenseTableBody.innerHTML = ''; // Clear table
-            message.textContent = 'All expenses cleared.';
-            message.style.color = '#dc3545';
-        });
-    </script>
+      // Retrieve existing expenses from localStorage, or create a new array if none exist
+      const savedExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
 
+      // Add the new expense to the list
+      savedExpenses.push(newExpense);
+
+      // Save the updated list back to localStorage
+      localStorage.setItem('expenses', JSON.stringify(savedExpenses));
+
+      // Clear the input fields
+      document.getElementById('category').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('date').value = '';
+      document.getElementById('expense').value = '';
+
+      // Reload the expenses list
+      loadExpenses();
+    }
+  </script>
 </body>
 </html>
+
