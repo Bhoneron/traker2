@@ -113,7 +113,8 @@
                     <div>
                         <strong>${expense.name}</strong> - $${expense.amount} <br>
                         <em>Category: ${expense.category}</em> <br>
-                        <small>${expense.description}</small>
+                        <small>${expense.description}</small> <br>
+                        <small>Date: ${expense.date}</small>
                     </div>
                     <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>
                 `;
@@ -137,8 +138,9 @@
             const description = document.getElementById('expense-description').value.trim();
 
             if (name && !isNaN(amount) && amount > 0 && category && description) {
+                const date = new Date().toLocaleDateString(); // Get current date
                 const expenses = loadExpenses();
-                expenses.push({ name, amount, category, description });
+                expenses.push({ name, amount, category, description, date });
                 saveExpenses(expenses);
                 renderExpenses();  // Re-render the list with the new expense
                 document.getElementById('expense-name').value = '';  // Clear the input fields
