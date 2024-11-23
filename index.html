@@ -5,71 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Money Usage Tracker</title>
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #f4f7f6;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
+
         .container {
-            width: 80%;
-            margin: 30px auto;
             background-color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 20px;
         }
+
         h1 {
             text-align: center;
             color: #333;
-        }
-        .input-section, .expense-list {
             margin-bottom: 20px;
         }
-        .input-section input, .input-section select {
-            padding: 8px;
-            margin-right: 10px;
-            font-size: 16px;
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
-        .input-section button {
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Form Inputs and Buttons */
+        .form-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
             padding: 10px 15px;
-            font-size: 16px;
-            cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .input-section button:hover {
+
+        button:hover {
             background-color: #45a049;
         }
-        .expense-item {
-            background-color: #f9f9f9;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+
+        .clear-btn {
+            background-color: #f44336;
         }
-        .expense-item span {
-            margin-right: 10px;
+
+        .clear-btn:hover {
+            background-color: #e53935;
         }
-        .expense-item button {
-            background-color: #ff6347;
-            border: none;
-            padding: 6px 10px;
-            color: white;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .expense-item button:hover {
-            background-color: #ff4500;
-        }
-        .total-expenses {
-            font-size: 20px;
+
+        /* Message Styling */
+        .message {
+            color: #28a745;
             font-weight: bold;
             text-align: center;
-            margin-top: 20px;
         }
     </style>
 </head>
@@ -77,107 +108,97 @@
 
     <div class="container">
         <h1>Daily Money Usage Tracker</h1>
-        
-        <!-- Input Section -->
-        <div class="input-section">
-            <input type="text" id="category" placeholder="Category" required />
-            <input type="text" id="description" placeholder="Description" required />
-            <input type="number" id="expense" placeholder="Amount" required />
-            <input type="date" id="expenseDate" required />
-            <button onclick="addExpense()">Add Expense</button>
+
+        <div class="form-container">
+            <label for="date">Date</label>
+            <input type="date" id="date" required>
+
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="Food">Food</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Utilities">Utilities</option>
+            </select>
+
+            <label for="description">Description</label>
+            <input type="text" id="description" placeholder="Enter expense description" required>
+
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" placeholder="Amount spent" required>
+
+            <button id="addExpense">Add Expense</button>
+            <button class="clear-btn" id="clearData">Clear All Data</button>
         </div>
-        
-        <!-- Expense List Section -->
-        <div class="expense-list" id="expense-list">
-            <!-- Expenses will be added here dynamically -->
-        </div>
-        
-        <!-- Total Expenses -->
-        <div class="total-expenses" id="total-expenses">Total: $0.00</div>
+
+        <p id="message" class="message"></p>
+
+        <table id="expenseTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <script>
-        // Load expenses from localStorage when the page is loaded
-        let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-        
-        // Function to add an expense
-        function addExpense() {
-            // Get input values
+        // Get DOM elements
+        const addExpenseButton = document.getElementById('addExpense');
+        const clearDataButton = document.getElementById('clearData');
+        const expenseTableBody = document.querySelector('#expenseTable tbody');
+        const message = document.getElementById('message');
+
+        // Data storage
+        let expenses = [];
+
+        // Event Listener: Add Expense
+        addExpenseButton.addEventListener('click', () => {
+            const date = document.getElementById('date').value;
             const category = document.getElementById('category').value;
             const description = document.getElementById('description').value;
-            const expenseAmount = parseFloat(document.getElementById('expense').value);
-            const expenseDate = document.getElementById('expenseDate').value;
+            const amount = parseFloat(document.getElementById('amount').value);
 
-            // Validate inputs
-            if (!category || !description || isNaN(expenseAmount) || expenseAmount <= 0 || !expenseDate) {
-                alert("Please fill all fields with valid values.");
-                return;
-            }
-            
-            // Create expense object
-            const expense = {
-                category: category,
-                description: description,
-                amount: expenseAmount,
-                date: expenseDate
-            };
-            
-            // Add the expense to the array
-            expenses.push(expense);
-            
-            // Save expenses to localStorage
-            localStorage.setItem('expenses', JSON.stringify(expenses));
-            
-            // Clear input fields
-            document.getElementById('category').value = '';
-            document.getElementById('description').value = '';
-            document.getElementById('expense').value = '';
-            document.getElementById('expenseDate').value = '';
-            
-            // Update the expense list and total
-            updateExpenseList();
-            updateTotalExpenses();
-        }
-        
-        // Function to remove an expense
-        function removeExpense(index) {
-            expenses.splice(index, 1);
-            // Save the updated expenses to localStorage
-            localStorage.setItem('expenses', JSON.stringify(expenses));
-            updateExpenseList();
-            updateTotalExpenses();
-        }
-        
-        // Function to update the expense list display
-        function updateExpenseList() {
-            const expenseListDiv = document.getElementById('expense-list');
-            expenseListDiv.innerHTML = '';  // Clear the list
-            
-            expenses.forEach((expense, index) => {
-                const expenseItemDiv = document.createElement('div');
-                expenseItemDiv.classList.add('expense-item');
-                expenseItemDiv.innerHTML = `
-                    <span><strong>Category:</strong> ${expense.category}</span>
-                    <span><strong>Description:</strong> ${expense.description}</span>
-                    <span><strong>Amount:</strong> $${expense.amount.toFixed(2)}</span>
-                    <span><strong>Date:</strong> ${expense.date}</span>
-                    <button onclick="removeExpense(${index})">Remove</button>
+            if (date && category && description && !isNaN(amount)) {
+                // Create new expense object
+                const expense = { date, category, description, amount };
+                expenses.push(expense);
+
+                // Add expense to table
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${category}</td>
+                    <td>${description}</td>
+                    <td>$${amount.toFixed(2)}</td>
                 `;
-                expenseListDiv.appendChild(expenseItemDiv);
-            });
-        }
-        
-        // Function to update the total expenses
-        function updateTotalExpenses() {
-            const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-            document.getElementById('total-expenses').innerText = `Total: $${total.toFixed(2)}`;
-        }
-        
-        // Initialize the expense list and total when the page loads
-        window.onload = function() {
-            updateExpenseList();
-            updateTotalExpenses();
-        };
+                expenseTableBody.appendChild(row);
+
+                // Clear inputs
+                document.getElementById('date').value = '';
+                document.getElementById('description').value = '';
+                document.getElementById('amount').value = '';
+
+                message.textContent = 'Expense added successfully!';
+                message.style.color = '#28a745';
+            } else {
+                message.textContent = 'Please fill in all fields correctly.';
+                message.style.color = '#dc3545';
+            }
+        });
+
+        // Event Listener: Clear All Data
+        clearDataButton.addEventListener('click', () => {
+            expenses = [];
+            expenseTableBody.innerHTML = ''; // Clear table
+            message.textContent = 'All expenses cleared.';
+            message.style.color = '#dc3545';
+        });
     </script>
 
 </body>
