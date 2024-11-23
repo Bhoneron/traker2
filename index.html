@@ -16,7 +16,7 @@
             color: #333;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
@@ -25,16 +25,17 @@
         }
         .expense-form {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             margin-bottom: 20px;
         }
-        .expense-form input, .expense-form button {
+        .expense-form input, .expense-form select, .expense-form button {
             padding: 10px;
             font-size: 16px;
             margin: 5px;
         }
-        .expense-form input {
-            width: 45%;
+        .expense-form input, .expense-form select {
+            width: 30%;
         }
         .expense-form button {
             background-color: #4CAF50;
@@ -78,6 +79,8 @@
         <div class="expense-form">
             <input type="text" id="expense-name" placeholder="Expense Name">
             <input type="number" id="expense-amount" placeholder="Amount" min="0">
+            <input type="text" id="expense-category" placeholder="Category">
+            <input type="text" id="expense-description" placeholder="Description">
             <button onclick="addExpense()">Add Expense</button>
         </div>
 
@@ -107,7 +110,11 @@
                 const expenseElement = document.createElement('div');
                 expenseElement.classList.add('expense-item');
                 expenseElement.innerHTML = `
-                    <span>${expense.name}: $${expense.amount}</span>
+                    <div>
+                        <strong>${expense.name}</strong> - $${expense.amount} <br>
+                        <em>Category: ${expense.category}</em> <br>
+                        <small>${expense.description}</small>
+                    </div>
                     <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>
                 `;
                 expensesList.appendChild(expenseElement);
@@ -126,14 +133,18 @@
         function addExpense() {
             const name = document.getElementById('expense-name').value.trim();
             const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value.trim();
+            const description = document.getElementById('expense-description').value.trim();
 
-            if (name && !isNaN(amount) && amount > 0) {
+            if (name && !isNaN(amount) && amount > 0 && category && description) {
                 const expenses = loadExpenses();
-                expenses.push({ name, amount });
+                expenses.push({ name, amount, category, description });
                 saveExpenses(expenses);
                 renderExpenses();  // Re-render the list with the new expense
                 document.getElementById('expense-name').value = '';  // Clear the input fields
                 document.getElementById('expense-amount').value = '';
+                document.getElementById('expense-category').value = '';
+                document.getElementById('expense-description').value = '';
             } else {
                 alert('Please enter valid expense details.');
             }
